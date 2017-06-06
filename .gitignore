@@ -1,0 +1,715 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.util.Date;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+class Connect{
+	public static final String DBDRIVER="org.gjt.mm.mysql.Driver";
+	public static final String DBURL="jdbc:mysql://localhost:3306/ATM";
+	public static final String DBUSER="root";
+	public static final String DBPASS="864172";
+	static Connection conn=null;
+	static Statement stmt=null;
+	static ResultSet rs=null;
+	public Connect(){
+		try{
+			Class.forName(DBDRIVER);
+		}catch(ClassNotFoundException e){
+			e.printStackTrace();
+		}
+		try{
+			conn=DriverManager.getConnection(DBURL, DBUSER, DBPASS);
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+		try {
+			stmt=conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(conn);
+	}
+}
+
+class Login{     /*登录主界面界面*/
+	static String ID=null;
+	private JFrame fLogin=new JFrame("登录");
+	private JLabel lUsername=new JLabel("用户名:");
+	private JLabel lPassword=new JLabel("密码:");
+	private JTextField tUsername=new JTextField(30);
+	private JPasswordField tPassword=new JPasswordField();
+	private JButton bLogin=new JButton("登录");
+	private JButton bNew=new JButton("注册");
+	private JButton bRevise=new JButton("修改密码");
+	private JLabel lSay=new JLabel("请输入账号密码");
+	static String sql=null;
+	String rPassword=null;
+	public Login(){
+		fLogin.setLayout(null);
+		lUsername.setBounds(60, 20, 50, 30);
+		tUsername.setBounds(150, 20, 150, 30);
+		lPassword.setBounds(60, 70, 50, 30);
+		tPassword.setBounds(150, 70, 150, 30);
+		bLogin.setBounds(40, 120, 100, 30);
+		bNew.setBounds(165, 120, 100, 30);
+		bRevise.setBounds(290, 120, 100, 30);
+		lSay.setBounds(60,170,250,30);
+		fLogin.add(lUsername);
+		fLogin.add(tUsername);
+		fLogin.add(lPassword);
+		fLogin.add(tPassword);
+		fLogin.add(bLogin);
+		fLogin.add(bNew);
+		fLogin.add(bRevise);
+		fLogin.add(lSay);
+		fLogin.setVisible(true);
+		fLogin.setSize(430, 330);
+		fLogin.setLocation(310,210);
+		bLogin.addActionListener(new ActionListener(){  /*登录代码块起始*/
+			public void actionPerformed(ActionEvent arg0){
+				if(arg0.getSource()==bLogin){
+					new Connect();
+					String tname=tUsername.getText();
+					String tpass=new String(tPassword.getPassword());
+					sql="select * from user where ID="+tname+"";
+					try {
+						Connect.stmt.executeQuery(sql);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						Connect.rs=Connect.stmt.executeQuery(sql);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						while(Connect.rs.next()){
+							rPassword=Connect.rs.getString("password");
+						}
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					try {
+						Connect.stmt.close();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try{
+						Connect.conn.close();
+					}catch(SQLException e){
+						e.printStackTrace();
+					}
+					if(rPassword.equals(tpass)){
+						ID=tname;
+						lSay.setText("欢迎您！用户"+tname+"登陆成功！");
+					}
+					else
+						lSay.setText("账号或密码错误，请重新输入");
+				}
+			}
+		});           /*登录代码块结束*/
+		
+		bNew.addActionListener(new ActionListener(){    /*注册代码块起始*/
+			public void actionPerformed(ActionEvent arg0){
+				new New();
+			}
+		});			/*注册代码块结束*/
+		
+		bRevise.addActionListener(new ActionListener(){    /*修改密码代码块起始*/
+			public void actionPerformed(ActionEvent arg0){
+				new Revise();
+			}
+		});			/*修改密码代码块结束*/
+	}
+}
+
+class New{					/*注册新用户*/
+	private JFrame jNew=new JFrame("注册新用户");
+	private JLabel lNewUsername=new JLabel("用户名:");
+	private JLabel lNewPassword1=new JLabel("密码:");
+	private JLabel lNewPassword2=new JLabel("确认密码:");
+	private JTextField tNewUsername=new JTextField(30);
+	private JPasswordField tNewPassword1=new JPasswordField();
+	private JPasswordField tNewPassword2=new JPasswordField();
+	private JLabel lNewSay=new JLabel();
+	static JButton bNew=new JButton("注册");
+	String sql=null;
+	String sql1=null;
+	String sql2=null;
+	String sql3=null;
+	String rUsername=null;
+	DateFormat date=null;
+	public New(){
+		date=DateFormat.getDateTimeInstance();
+		jNew.setLayout(null);
+		lNewUsername.setBounds(5, 5, 60, 30);
+		tNewUsername.setBounds(70, 5, 60, 30);
+		lNewPassword1.setBounds(5, 45, 60, 30);
+		tNewPassword1.setBounds(70, 45, 120, 30);
+		lNewPassword2.setBounds(5, 85, 60, 30);
+		tNewPassword2.setBounds(70, 85, 120, 30);
+		bNew.setBounds(5, 125, 60, 30);
+		lNewSay.setBounds(5, 165, 250, 30);
+		jNew.add(lNewUsername);
+		jNew.add(tNewUsername);
+		jNew.add(lNewPassword1);
+		jNew.add(tNewPassword1);
+		jNew.add(lNewPassword2);
+		jNew.add(tNewPassword2);
+		jNew.add(bNew);
+		jNew.add(lNewSay);
+		jNew.setSize(280, 230);
+		jNew.setLocation(380,250);
+		jNew.setVisible(true);
+		bNew.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				if(arg0.getSource()==bNew){
+					String tname=tNewUsername.getText();
+					String tpass1=new String(tNewPassword1.getPassword());
+					String tpass2=new String(tNewPassword2.getPassword());
+					if(tpass1.length()>=6&&tpass2.length()>=6&&tpass1.equals(tpass2)){/*如果输入的密码满足要求*/
+						new Connect();
+						sql="INSERT INTO user(ID,password)"+"VALUES('"+tname+"','"+tpass1+"')";
+						sql1="select * from user where ID="+tname+"";
+						sql2="insert into information(ID,balance)"+"values('"+tname+"',0)";
+						sql3="insert into record(ID,type,time,balance)"+"values('"+tname+"','新建用户','"+date.format(new Date())+"',0)";
+						try {     /*每注册一个新用户，向information表中插入信息*/
+							Connect.stmt.executeUpdate(sql2);
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							Connect.stmt.executeQuery(sql1);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						try {
+							Connect.rs=Connect.stmt.executeQuery(sql1);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						try {
+							while(Connect.rs.next()){
+								rUsername=Connect.rs.getString("ID");
+								}
+							try{if(rUsername.equals(tname)){   /*当输入的账号user表中没有时，此处会抛出异常*/
+								lNewSay.setText("此账号已被注册，请重新输入");/*此时抛出异常但不处理，继续执行*/
+								}
+							}catch(Exception e){}
+							try {
+								Connect.stmt.executeUpdate(sql);
+								lNewSay.setText("注册成功");
+								try {     /*每注册一个新用户，向record表中插入信息*/
+									Connect.stmt.executeUpdate(sql3);
+								} catch (SQLException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							} catch (SQLException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							
+							}catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							try {
+								Connect.stmt.close();
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							try{
+								Connect.conn.close();
+							}catch(SQLException e){
+								e.printStackTrace();
+							}
+						}
+					else if(tpass1.length()<6&&tpass2.length()<6&&tpass1.equals(tpass2)){
+						lNewSay.setText("至少输入6位密码");
+						}
+					else if(tpass1.length()<6&&tpass2.length()<6&&!(tpass1.equals(tpass2))){
+						lNewSay.setText("至少输入6位密码且两次密码输入不一致");
+						}
+					else if(tpass1.length()>=6&&tpass2.length()>=6&&!(tpass1.equals(tpass2))){
+						lNewSay.setText("两次密码输入不一致");
+						}
+				}
+			}
+		});
+	}
+}
+
+class Revise{  /*修改密码*/
+	private JFrame jRe=new JFrame("修改密码");
+	private JLabel lUsername=new JLabel("账号:");
+	private JLabel lOldPassword=new JLabel("旧密码");
+	private JLabel lNewPassword1=new JLabel("新密码:");
+	private JLabel lNewPassword2=new JLabel("确认密码:");
+	private JTextField tUsername=new JTextField(30);
+	private JPasswordField tOldPassword=new JPasswordField();
+	private JPasswordField tNewPassword1=new JPasswordField();
+	private JPasswordField tNewPassword2=new JPasswordField();
+	private JLabel lReSay=new JLabel("该账号不存在");
+	static JButton bRe=new JButton("修改");
+	String sql=null;
+	String sql1=null;
+	String rOldPassword;
+	String rUsername;
+	public Revise(){
+		jRe.setLayout(null);
+		lUsername.setBounds(5, 5, 60, 30);
+		tUsername.setBounds(70, 5, 60, 30);
+		lOldPassword.setBounds(5, 45, 60, 30);
+		tOldPassword.setBounds(70, 45, 120, 30);
+		lNewPassword1.setBounds(5, 85, 60, 30);
+		tNewPassword1.setBounds(70, 85, 120, 30);
+		lNewPassword2.setBounds(5, 125, 60, 30);
+		tNewPassword2.setBounds(70, 125, 120, 30);
+		bRe.setBounds(5, 165, 60, 30);
+		lReSay.setBounds(5, 205, 250, 30);
+		jRe.add(lUsername);
+		jRe.add(tUsername);
+		jRe.add(lOldPassword);
+		jRe.add(tOldPassword);
+		jRe.add(lNewPassword1);
+		jRe.add(tNewPassword1);
+		jRe.add(lNewPassword2);
+		jRe.add(tNewPassword2);
+		jRe.add(bRe);
+		jRe.add(lReSay);
+		jRe.setSize(280, 280);
+		jRe.setLocation(380,250);
+		jRe.setVisible(true);
+		bRe.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				String tname=tUsername.getText();
+				String tpass=new String(tOldPassword.getPassword());
+				String tpass1=new String(tNewPassword1.getPassword());
+				String tpass2=new String(tNewPassword2.getPassword());
+				new Connect();
+				sql="select * from user where ID= "+tname+"";
+				sql1="update user set password='"+tpass1+"' where ID='"+tname+"'";
+				try {
+					Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					Connect.rs=Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					while(Connect.rs.next()){
+						rUsername=Connect.rs.getString("ID");
+						rOldPassword=Connect.rs.getString("password");
+						}
+					try{if(rUsername.equals(tname)){   /*当输入的账号user表中没有时，此处会抛出异常此时抛出异常但不处理，继续执行*/
+						/*当输入账号存在数据库中时，对其进行修改密码*/
+						if(rOldPassword.equals(tpass)){
+							if(tpass1.length()>=6&&tpass2.length()>=6&&tpass1.equals(tpass2)&&!tpass.equals(tpass1)){
+								/*此时新密码格式正确，进行数据库修改*/
+								try {
+									Connect.stmt.executeUpdate(sql1);
+									lReSay.setText("密码修改成功");
+								} catch (SQLException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							}
+							else if(tpass1.equals(tpass2)&&tpass.equals(tpass1)){
+								lReSay.setText("新密码不能跟旧密码重复");
+							}
+							else if(tpass1.length()<6&&tpass2.length()<6&&tpass1.equals(tpass2)){
+								lReSay.setText("至少输入6位密码");
+								}
+							else if(tpass1.length()<6&&tpass2.length()<6&&!(tpass1.equals(tpass2))){
+								lReSay.setText("至少输入6位密码且两次密码输入不一致");
+								}
+							else if(tpass1.length()>=6&&tpass2.length()>=6&&!(tpass1.equals(tpass2))){
+								lReSay.setText("两次密码输入不一致");
+								}
+						}
+						else 
+							lReSay.setText("输入原密码错误");
+										/*修改密码代码块结束*/
+						}
+					}catch(Exception e){}
+				}catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+}
+
+class Query{   /*查询余额*/
+	private JFrame jQuery=new JFrame("查询余额");
+	private JLabel lQuery=new JLabel("查询账户余额");
+	private JLabel lUsername=new JLabel("当前账号:");
+	private JLabel lBalance=new JLabel("账户余额:");
+	private JLabel tUsername=new JLabel();
+	private JLabel tBalance=new JLabel();
+	String sql=null;
+	String rBalance=null;
+	public Query(){
+		jQuery.setLayout(null);
+		lQuery.setBounds(30, 10, 120, 30);
+		lUsername.setBounds(10, 50, 90, 30);
+		tUsername.setBounds(110, 50, 90, 30);
+		lBalance.setBounds(10, 90, 90, 30);
+		tBalance.setBounds(110, 90, 90, 30);
+		jQuery.add(lQuery);
+		jQuery.add(lUsername);
+		jQuery.add(tUsername);
+		jQuery.add(lBalance);
+		jQuery.add(tBalance);
+		jQuery.setVisible(true);
+		jQuery.setSize(430, 330);
+		jQuery.setLocation(310,210);
+		
+		new Connect();
+		sql="select *from information where ID="+Login.ID+"";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				rBalance=Connect.rs.getString("balance");
+				}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		tUsername.setText(Login.ID);
+		tBalance.setText(rBalance+"元");
+	}
+}
+
+class Deposit{  /*存款*/
+	private JFrame jDeposit=new JFrame("存款");
+	private JLabel lDep=new JLabel("存款");
+	private JLabel lDepMoney=new JLabel("存入:");
+	private JTextField tDepMoney=new JTextField(20);
+	private JLabel lDepZero=new JLabel("00元");
+	private JLabel lRemind=new JLabel("(温馨提醒:只能存入面额为“100元”的人民币)");
+	private JButton bDep=new JButton("存款");
+	private JLabel lDepSay=new JLabel();
+	private JLabel lDepSay2=new JLabel();
+	String sql=null;
+	String sql1=null;
+	String sql2=null;
+	String rBalance=null;
+	String sBalance=null;
+	DateFormat date=null;
+	public Deposit(){
+		date=DateFormat.getDateTimeInstance();
+		jDeposit.setLayout(null);
+		lDep.setBounds(110, 10, 120, 30);
+		lDepMoney.setBounds(80, 50, 40, 30);
+		tDepMoney.setBounds(120, 50, 20, 30);
+		lDepZero.setBounds(150, 50, 30, 30);
+		lRemind.setBounds(10, 90, 300, 30);
+		bDep.setBounds(90, 140, 90, 30);
+		lDepSay.setBounds(80, 190, 150, 30);
+		lDepSay2.setBounds(80, 220, 150, 30);
+		jDeposit.add(lDep);
+		jDeposit.add(lDepMoney);
+		jDeposit.add(tDepMoney);
+		jDeposit.add(lDepZero);
+		jDeposit.add(lRemind);
+		jDeposit.add(bDep);
+		jDeposit.add(lDepSay);
+		jDeposit.add(lDepSay2);
+		jDeposit.setVisible(true);
+		jDeposit.setSize(430, 330);
+		jDeposit.setLocation(310,210);
+		
+		bDep.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Connect();
+				String Money=tDepMoney.getText();
+				int iMoney=Integer.parseInt(Money)*100;
+				if(iMoney>=0){
+					sql="select *from information where ID="+Login.ID+"";
+					try {
+						Connect.stmt.executeQuery(sql);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				
+					try {
+						Connect.rs=Connect.stmt.executeQuery(sql);
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						while(Connect.rs.next()){
+							rBalance=Connect.rs.getString("balance");
+						}
+					}catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					int iBalance=Integer.parseInt(rBalance);
+					int NewBalance=iMoney+iBalance;
+					sBalance=String.valueOf(NewBalance);
+					sql1="update information set balance='"+sBalance+"' where ID="+Login.ID+"";
+					try {
+						Connect.stmt.executeUpdate(sql1);
+						lDepSay.setText("成功存入"+iMoney+"元");
+						lDepSay2.setText("当前账号余额:"+sBalance+"元");
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					String type="存入"+iMoney;
+					sql2="insert into record(ID,type,time,balance)"+"values('"+Login.ID+"','"+type+"','"+date.format(new Date())+"','"+sBalance+"')";
+					try {     /*每存入一笔金钱，向record表中插入信息*/
+						Connect.stmt.executeUpdate(sql2);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				else
+					lDepSay.setText("请输入正整数");
+			}
+		});
+	}
+	
+}
+
+class Draw{  /*取款*/
+	private JFrame jDraw=new JFrame("取款");
+	private JLabel lDraw=new JLabel("取款");
+	private JLabel lDrawMoney=new JLabel("取出:");
+	private JTextField tDrawMoney=new JTextField(20);
+	private JLabel lDrawZero=new JLabel("00元");
+	private JLabel lRemind=new JLabel("(温馨提醒:只能取出面额为“100元”的人民币,");
+	private JLabel lRemind2=new JLabel("                   一次最多可取出50张)");
+	private JButton bDraw=new JButton("取款");
+	private JLabel lDrawSay=new JLabel();
+	private JLabel lDrawSay2=new JLabel();
+	private String sql=null;
+	private String sql1=null;
+	private String sql2=null;
+	String rBalance=null;
+	String sBalance=null;
+	DateFormat date=null;
+	public Draw(){
+		date=DateFormat.getDateTimeInstance();
+		jDraw.setLayout(null);
+		lDraw.setBounds(110, 10, 120, 30);
+		lDrawMoney.setBounds(80, 50, 40, 30);
+		tDrawMoney.setBounds(120, 50, 20, 30);
+		lDrawZero.setBounds(150, 50, 30, 30);
+		lRemind.setBounds(10, 90, 300, 30);
+		lRemind2.setBounds(10, 120, 300, 30);
+		bDraw.setBounds(90, 170, 90, 30);
+		lDrawSay.setBounds(80, 220, 150, 30);
+		lDrawSay2.setBounds(80, 250, 150, 30);
+		jDraw.add(lDraw);
+		jDraw.add(lDrawMoney);
+		jDraw.add(tDrawMoney);
+		jDraw.add(lDrawZero);
+		jDraw.add(lRemind);
+		jDraw.add(lRemind2);
+		jDraw.add(bDraw);
+		jDraw.add(lDrawSay);
+		jDraw.add(lDrawSay2);
+		jDraw.setVisible(true);
+		jDraw.setSize(430, 330);
+		jDraw.setLocation(310,210);
+		
+		bDraw.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Connect();
+				String Money=tDrawMoney.getText();
+				int iMoney=Integer.parseInt(Money)*100;  /*取出多少钱*/
+				sql="select *from information where ID="+Login.ID+"";
+				try {
+					Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+				try {
+					Connect.rs=Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					while(Connect.rs.next()){
+						rBalance=Connect.rs.getString("balance");
+					}
+				}catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int iBalance=Integer.parseInt(rBalance);
+				if(iMoney>=0&&iMoney<=5000&&iMoney<=iBalance){
+					int NewBalance=iBalance-iMoney;
+					sBalance=String.valueOf(NewBalance);
+					sql1="update information set balance='"+sBalance+"' where ID="+Login.ID+"";
+					try {
+						Connect.stmt.executeUpdate(sql1);
+						lDrawSay.setText("成功取出"+iMoney+"元");
+						lDrawSay2.setText("当前账号余额:"+sBalance+"元");
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					String type="取出"+iMoney;
+					sql2="insert into record(ID,type,time,balance)"+"values('"+Login.ID+"','"+type+"','"+date.format(new Date())+"','"+sBalance+"')";
+					try {     /*每存入一笔金钱，向record表中插入信息*/
+						Connect.stmt.executeUpdate(sql2);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				else
+					lDrawSay.setText("余额不足");
+			}
+		});
+	}
+}
+
+class Record extends JFrame{ /*查询交易记录*/
+	private JTextArea text=new JTextArea();
+	private String sql=null;
+	private String rID=null;
+	private String rType=null;
+	private String rBalance=null;
+	public Record(){
+		super.setTitle("查询交易记录");
+		JScrollPane scr=new JScrollPane(text);
+		scr.setBounds(5,5,300,200);
+		super.add(scr);
+		super.setSize(430,330);
+		super.setVisible(true);
+		super.setLocation(310,210);
+		new Connect();
+		sql="select *from record where ID="+Login.ID+"";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				rID=Connect.rs.getString("ID");
+				rType=Connect.rs.getString("type");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				rBalance=Connect.rs.getString("balance");
+				text.append("账号"+rID+"于"+d+" "+t+rType+",余额"+rBalance+"元\n");
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}
+
+public class S8E1ATM {
+	public static void main(String args[]){
+		JFrame frame=new JFrame("Welcome");
+		frame.setLayout(null);
+		JButton Login=new JButton("登录");
+		JButton Query=new JButton("查询余额");
+		JButton Deposit=new JButton("存款");
+		JButton Draw=new JButton("取款");
+		JButton Record=new JButton("查询交易记录");
+		Login.setBounds(45, 10, 180, 30);
+		Query.setBounds(45, 50, 180, 30);
+		Deposit.setBounds(45, 90, 180, 30);
+		Draw.setBounds(45, 130, 180, 30);
+		Record.setBounds(45, 170, 180, 30);
+		frame.add(Login);
+		frame.add(Query);
+		frame.add(Deposit);
+		frame.add(Draw);
+		frame.add(Record);
+		frame.setVisible(true);
+		frame.setSize(450, 350);
+		frame.setLocation(300,200);
+		
+		Login.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Login();
+			}
+		});
+		Query.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Query();
+			}
+		});
+		Deposit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Deposit();
+			}
+		});
+		Draw.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Draw();
+			}
+		});
+		Record.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new Record();
+			}
+		});
+	}
+}
